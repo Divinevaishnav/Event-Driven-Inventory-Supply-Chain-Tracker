@@ -73,6 +73,7 @@
 │ Prometheus • Grafana • OpenTelemetry • Loki/ELK • Alerting                           │
 │ Kubernetes • Helm • Secrets (Vault / K8s) • CI/CD                                    │
 └──────────────────────────────────────────────────────────────────────────────────────┘
+```
 **Two planes, on purpose:**
 
 | Plane | Runs | Goal |
