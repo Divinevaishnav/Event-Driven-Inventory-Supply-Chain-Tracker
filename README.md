@@ -62,7 +62,7 @@
 ├─────────────────────────────────────────┤  ├─────────────────────────────────────────┤
 │ Inventory Dashboard  • Stock Matrix     │  │ PostgreSQL - primary ACID data store    │
 │ Low-Stock Alerts  • Reorder Management  │  │ Redis      - low-latency state          │
-│ Supplier Insights • Demand Forecasting  │  │ (cache, limits, stock counters,        │
+│ Supplier Insights • Demand Forecasting  │  │ (cache, limits, stock counters,         │
 │ Warehouse Performance                   │  │  idempotency keys, sessions)            │
 └─────────────────────────────────────────┘  └─────────────────────────────────────────┘
                                            │  metrics / traces / logs from every layer
