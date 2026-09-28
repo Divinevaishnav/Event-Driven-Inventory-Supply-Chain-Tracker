@@ -80,6 +80,8 @@
 | **Data plane** (Inventory Gateway) | Synchronously on every request | Low latency, transactional enforcement (ACID stock check, rate limit, idempotency) |
 | **Control / Supply Chain plane** | Asynchronously from inventory events | Alerts, supplier orders, analytics, optimization - never blocks a checkout request |
 
+---
+
 ## Design principles
 
 - **Data plane / control plane separation** - the inventory gateway is real-time; supply chain alerting and reordering processing is asynchronous.
