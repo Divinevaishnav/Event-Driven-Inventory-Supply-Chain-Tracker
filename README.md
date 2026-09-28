@@ -35,14 +35,14 @@
 └──────────────────────────────────────────────────────────────────────────────────────┘
                                            │
                                            ▼
-┌────────────────────────────────────────────────┐    ┌────────────────────────────────┐
-│ 3. INVENTORY GATEWAY  (data plane, real-time)  │    │ 4. MESSAGING BUS & BROKERS     │
-├────────────────────────────────────────────────┤    ├────────────────────────────────┤
-│ Identity / Tenant Resolution                   │    │ • RabbitMQ (AMQP Topic Exch)   │
+┌────────────────────────────────────────────────┐     ┌────────────────────────────────┐
+│ 3. INVENTORY GATEWAY  (data plane, real-time)  │     │ 4. MESSAGING BUS & BROKERS     │
+├────────────────────────────────────────────────┤     ├────────────────────────────────┤
+│ Identity / Tenant Resolution                   │     │ • RabbitMQ (AMQP Topic Exch)   │
 │  ↓ Policy & Validation Engine                  │ ─▶ │ • NATS JetStream (Streaming)   │
-│  ↓ Rate Limiting                               │    │ • Dead Letter Exchange (DLX)   │
-│  ↓ Idempotency Check                           │    │ • Queue Workers & Subscriptions│
-│  ↓ Stock Availability Scan                     │    └────────────────────────────────┘
+│  ↓ Rate Limiting                               │     │ • Dead Letter Exchange (DLX)   │
+│  ↓ Idempotency Check                           │     │ • Queue Workers & Subscriptions│
+│  ↓ Stock Availability Scan                     │     └────────────────────────────────┘
 │  ↓ Cache Lookup (Redis)                        │
 │  ↓ Product Catalog & Inventory Router          │
 │  ↓ Reliability (Circuit Breaker)               │
