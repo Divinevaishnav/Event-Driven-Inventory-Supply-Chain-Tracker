@@ -133,3 +133,26 @@ Workloads running in Kubernetes or external services that execute stock updates 
 | Batch Jobs | Stock Sync CronJobs |
 | POS Terminals | In-store checkout hardware and agents |
  
+## 2. API Edge / Ingress
+
+| Component | Responsibility |
+|---|---|
+| Kubernetes Ingress (API Gateway) | Cluster entry point |
+| TLS Termination | Encrypts / decrypts traffic |
+| Authentication | API Key / OAuth |
+| Request Protection | WAF / rate limit |
+| Routing | Forwards requests to the Inventory Gateway |
+
+## 3. Inventory Gateway (data plane)
+
+| # | Component | Purpose |
+|---|---|---|
+| 1 | Identity Resolution | Map caller to tenant / warehouse / store / app |
+| 2 | Policy Engine | Apply access and stock allocation policies |
+| 3 | Rate Limiting | Enforce request limits |
+| 4 | Idempotency Engine | Prevent double-deductions on retries |
+| 5 | Stock Availability Check | Validate real-time item stock thresholds |
+| 6 | Cache (Redis) | Serve repeated product availability queries from cache |
+| 7 | Product Catalog Router | Direct requests to Catalog or Stock services |
+| 8 | Reliability (Circuit Breaker) | Database failover and resilience |
+| 9 |Transaction Execution | Execute atomic SQL stock decrement in PostgreSQL |
