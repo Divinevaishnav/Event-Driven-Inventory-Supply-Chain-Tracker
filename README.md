@@ -74,6 +74,7 @@
 │ Kubernetes • Helm • Secrets (Vault / K8s) • CI/CD                                    │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
 **Two planes, on purpose:**
 
 | Plane | Runs | Goal |
@@ -90,3 +91,45 @@
 - **Broker-agnostic** - new message brokers (RabbitMQ / NATS) plug in through standard event producers and consumers.
 - **Low-latency state in Redis**, durable transactional data in PostgreSQL.
 - **REST / Event-Driven API** - consumers switch to the inventory gateway without breaking existing checkout workflows.
+
+---
+
+## Request lifecycle
+
+```text
+Client
+  │  1. HTTPS request (POST /inventory/checkout)
+  ▼
+Ingress ── TLS ── AuthN ── WAF / rate limit ── Routing
+  │
+  ▼
+Inventory Gateway
+  │  2. Resolve identity  (ServiceAccount → Workload → App → Warehouse → Tenant)
+  │  3. Policy check, rate limit, idempotency check ◀── Redis (counters, limits, keys)
+  │  4. Cache lookup ─────────── hit ───────────────▶ return cached inventory state
+  │           │ miss
+  │  5. Atomic stock decrement (ACID transaction)   ──▶ PostgreSQL (products / inventory)
+  ▼
+Response ──▶ Client
+  ┆
+  ┆  6. Emit inventory event (async, non-blocking)
+  ▼
+Event Queue ──▶ Event Processor ──▶ Alert Engine ──▶ Reorder Engine ──▶ Analytics
+                                                       │
+                                                       ▼
+                                                 PostgreSQL (events, orders, alerts)
+```
+
+---
+
+##1. Inventory Consumers
+
+Workloads running in Kubernetes or external services that execute stock updates and queries over HTTPS.
+
+| Consumer | Description |
+|---|---|
+| E-commerce | Frontend / checkout portals |
+| Internal APIs | Fulfillment & Order Microservices |
+| Batch Jobs | Stock Sync CronJobs |
+| POS Terminals | In-store checkout hardware and agents |
+ 
