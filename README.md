@@ -73,3 +73,17 @@
 │ Prometheus • Grafana • OpenTelemetry • Loki/ELK • Alerting                           │
 │ Kubernetes • Helm • Secrets (Vault / K8s) • CI/CD                                    │
 └──────────────────────────────────────────────────────────────────────────────────────┘
+**Two planes, on purpose:**
+
+| Plane | Runs | Goal |
+|---|---|---|
+| **Data plane** (Inventory Gateway) | Synchronously on every request | Low latency, transactional enforcement (ACID stock check, rate limit, idempotency) |
+| **Control / Supply Chain plane** | Asynchronously from inventory events | Alerts, supplier orders, analytics, optimization - never blocks a checkout request |
+
+## Design principles
+
+- **Data plane / control plane separation** - the inventory gateway is real-time; supply chain alerting and reordering processing is asynchronous.
+- **Kubernetes-native identity** - costs are attributed via `ServiceAccount → Workload → Application → Warehouse → Tenant`.
+- **Broker-agnostic** - new message brokers (RabbitMQ / NATS) plug in through standard event producers and consumers.
+- **Low-latency state in Redis**, durable transactional data in PostgreSQL.
+- **REST / Event-Driven API** - consumers switch to the inventory gateway without breaking existing checkout workflows.
