@@ -122,7 +122,7 @@ Event Queue ──▶ Event Processor ──▶ Alert Engine ──▶ Reorder E
 
 ---
 
-##1. Inventory Consumers
+## 1. Inventory Consumers
 
 Workloads running in Kubernetes or external services that execute stock updates and queries over HTTPS.
 
