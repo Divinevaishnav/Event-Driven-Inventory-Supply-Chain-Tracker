@@ -249,8 +249,8 @@ Talks to the Control Plane API over REST (HTTPS).
 
 | Store | Role | Contents |
 |---|---|---|
-| **PostgreSQL**| Tenants, Warehouses, Applications, Products, Stock Balances, Stock Movements, Purchase Orders, Audit Logs |
-| **Redis** | Low-latency stateCache, Rate Limits, Idempotency Counters, Supplier Health, Temporary State, Sessions |
+| **PostgreSQL** | Primary data store | Tenants, Warehouses, Applications, Products, Stock Balances, Stock Movements, Purchase Orders, Audit Logs |
+| **Redis** | Low-latency state | Low-latency stateCache, Rate Limits, Idempotency Counters, Supplier Health, Temporary State, Sessions |
 
 ---
 
