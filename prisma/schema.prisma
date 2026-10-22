@@ -1,12 +1,187 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Multi-Tenant Event-Driven Inventory & Supply Chain Domain Schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------
+// 1. Identity & Topology
+// ----------------------------------------------------
+
+model Tenant {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  createdAt    DateTime      @default(now())
+
+  warehouses   Warehouse[]
+  applications Application[]
+  products     Product[]
+  suppliers    Supplier[]
+  eventLogs    EventLog[]
+
+  @@map("tenants")
+}
+
+model Warehouse {
+  id             String          @id @default(cuid())
+  tenantId       String
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  code           String          @unique // e.g. "WH-ORD-01"
+  name           String
+  city           String
+  country        String
+  capacity       Int
+  createdAt      DateTime        @default(now())
+
+  stockBalances  StockBalance[]
+  purchaseOrders PurchaseOrder[]
+  stockMovements StockMovement[]
+  eventLogs      EventLog[]
+
+  @@map("warehouses")
+}
+
+model Application {
+  id              String           @id @default(cuid())
+  tenantId        String
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name            String
+  code            String           // e.g. "ECOM-CHECKOUT", "POS-RETAIL-01"
+  apiKey          String
+  createdAt       DateTime         @default(now())
+
+  serviceAccounts ServiceAccount[]
+
+  @@map("applications")
+}
+
+model ServiceAccount {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  name          String
+  workloadType  String      // "K8S_POD", "CRON_JOB", "EXTERNAL_API"
+  createdAt     DateTime    @default(now())
+
+  @@map("service_accounts")
+}
+
+// ----------------------------------------------------
+// 2. Catalog & Inventory
+// ----------------------------------------------------
+
+model Product {
+  id               String                   @id @default(cuid())
+  tenantId         String
+  tenant           Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sku              String                   @unique
+  name             String
+  category         String
+  unitPrice        Float
+  minimumThreshold Int
+  createdAt        DateTime                 @default(now())
+
+  stockBalances    StockBalance[]
+  contractPricing  SupplierContractPricing[]
+  stockMovements   StockMovement[]
+
+  @@map("products")
+}
+
+model StockBalance {
+  id          String    @id @default(cuid())
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  onHand      Int
+  reserved    Int
+  safetyStock Int
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([warehouseId, productId])
+  @@map("stock_balances")
+}
+
+// ----------------------------------------------------
+// 3. Supply Chain & Audit
+// ----------------------------------------------------
+
+model Supplier {
+  id               String                    @id @default(cuid())
+  tenantId         String
+  tenant           Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name             String
+  contactEmail     String
+  leadTimeDays     Int
+  reliabilityScore Float                     @default(1.0)
+  createdAt        DateTime                  @default(now())
+
+  contractPricing  SupplierContractPricing[]
+  purchaseOrders   PurchaseOrder[]
+
+  @@map("suppliers")
+}
+
+model SupplierContractPricing {
+  id            String   @id @default(cuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  contractPrice Float
+  minOrderQty   Int
+
+  @@unique([supplierId, productId])
+  @@map("supplier_contract_pricing")
+}
+
+model PurchaseOrder {
+  id          String    @id @default(cuid())
+  poNumber    String    @unique
+  supplierId  String
+  supplier    Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  status      String    // "DRAFT", "SUBMITTED", "CONFIRMED", "RECEIVED"
+  totalAmount Float
+  createdAt   DateTime  @default(now())
+
+  @@map("purchase_orders")
+}
+
+model StockMovement {
+  id          String    @id @default(cuid())
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type        String    // "INBOUND", "OUTBOUND_CHECKOUT", "RESERVED", "ADJUSTMENT"
+  quantity    Int
+  referenceId String
+  createdAt   DateTime  @default(now())
+
+  @@map("stock_movements")
+}
+
+model EventLog {
+  id          String     @id @default(cuid())
+  eventId     String     @unique
+  eventType   String     // e.g. "INVENTORY_ALLOCATED", "STOCK_REPLENISHED", etc.
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  aggregateId String
+  payload     String     // JSON payload
+  status      String     // "PENDING", "PROCESSED", "DLQ"
+  createdAt   DateTime   @default(now())
+
+  @@map("event_logs")
 }
