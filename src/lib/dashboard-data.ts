@@ -47,12 +47,12 @@ export async function getDashboardData(): Promise<DashboardPayload> {
   })
 
   return {
-    tenants: tenantsRaw.map((t: any) => ({
+    tenants: tenantsRaw.map((t) => ({
       id: t.id,
       name: t.name,
       slug: t.slug,
       createdAt: t.createdAt.toISOString(),
-      warehouses: t.warehouses.map((w: any) => ({
+      warehouses: t.warehouses.map((w) => ({
         id: w.id,
         code: w.code,
         name: w.name,
@@ -60,19 +60,19 @@ export async function getDashboardData(): Promise<DashboardPayload> {
         country: w.country,
         capacity: w.capacity,
       })),
-      applications: t.applications.map((a: any) => ({
+      applications: t.applications.map((a) => ({
         id: a.id,
         name: a.name,
         code: a.code,
         apiKey: a.apiKey,
-        serviceAccounts: a.serviceAccounts.map((s: any) => ({
+        serviceAccounts: a.serviceAccounts.map((s) => ({
           id: s.id,
           name: s.name,
           workloadType: s.workloadType,
         })),
       })),
     })),
-    stockBalances: stockBalancesRaw.map((sb: any) => ({
+    stockBalances: stockBalancesRaw.map((sb) => ({
       id: sb.id,
       warehouseId: sb.warehouseId,
       productId: sb.productId,
@@ -108,7 +108,7 @@ export async function getDashboardData(): Promise<DashboardPayload> {
         },
       },
     })),
-    eventLogs: eventLogsRaw.map((e: any) => ({
+    eventLogs: eventLogsRaw.map((e) => ({
       id: e.id,
       eventId: e.eventId,
       eventType: e.eventType,

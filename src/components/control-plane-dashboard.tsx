@@ -46,6 +46,7 @@ import {
   SlidersHorizontal,
   Server,
 } from 'lucide-react'
+import { CheckoutSimulator } from '@/components/CheckoutSimulator'
 
 interface Props {
   initialData: DashboardPayload
@@ -198,6 +199,22 @@ export function ControlPlaneDashboard({ initialData }: Props) {
     return list
   }, [filteredByTenantStock])
 
+  const availableProducts = useMemo(() => {
+    const list: { sku: string; name: string; category?: string }[] = []
+    const seen = new Set<string>()
+    filteredByTenantStock.forEach((s) => {
+      if (!seen.has(s.product.sku)) {
+        seen.add(s.product.sku)
+        list.push({
+          sku: s.product.sku,
+          name: s.product.name,
+          category: s.product.category,
+        })
+      }
+    })
+    return list
+  }, [filteredByTenantStock])
+
   const formatEventBadge = (eventType: string) => {
     if (eventType.includes('INBOUND')) {
       return (
@@ -271,7 +288,7 @@ export function ControlPlaneDashboard({ initialData }: Props) {
                     EVENT-STREAM
                   </span>
                   <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 text-[10px] px-1.5 py-0 h-4">
-                    Control Plane v1.0
+                    Control Plane v2.0
                   </Badge>
                 </div>
                 <p className="text-[11px] text-zinc-400 font-mono">
@@ -518,6 +535,15 @@ export function ControlPlaneDashboard({ initialData }: Props) {
             </CardContent>
           </Card>
         </div>
+
+        {/* ================================================================ */}
+        {/* 2.5 DATA PLANE CHECKOUT SIMULATOR */}
+        {/* ================================================================ */}
+        <CheckoutSimulator
+          warehouses={availableWarehouses}
+          products={availableProducts}
+          onSuccess={handleRefresh}
+        />
 
         {/* ================================================================ */}
         {/* 3. WAREHOUSE STOCK MATRIX TABLE */}
