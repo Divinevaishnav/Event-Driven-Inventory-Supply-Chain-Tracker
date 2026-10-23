@@ -173,14 +173,19 @@ model StockMovement {
 model EventLog {
   id          String     @id @default(cuid())
   eventId     String     @unique
-  eventType   String     // e.g. "INVENTORY_ALLOCATED", "STOCK_REPLENISHED", etc.
+  eventType   String     // e.g. "INVENTORY_DEDUCTED", "LOW_STOCK_THRESHOLD_BREACHED", etc.
   tenantId    String
   tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   warehouseId String?
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
   aggregateId String
   payload     String     // JSON payload
-  status      String     // "PENDING", "PROCESSED", "DLQ"
+  status      String     @default("PENDING") // "PENDING", "PROCESSING", "PROCESSED", "DLQ"
+  retryCount  Int        @default(0)
+  maxRetries  Int        @default(3)
+  lastError   String?
+  processedAt DateTime?
+  routingKey  String?
   createdAt   DateTime   @default(now())
 
   @@map("event_logs")

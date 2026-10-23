@@ -117,6 +117,11 @@ export async function getDashboardData(): Promise<DashboardPayload> {
       aggregateId: e.aggregateId,
       payload: e.payload,
       status: e.status,
+      retryCount: e.retryCount,
+      maxRetries: e.maxRetries,
+      lastError: e.lastError,
+      processedAt: e.processedAt ? e.processedAt.toISOString() : null,
+      routingKey: e.routingKey,
       createdAt: e.createdAt.toISOString(),
       tenant: e.tenant
         ? {

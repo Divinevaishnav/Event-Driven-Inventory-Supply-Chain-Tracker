@@ -271,11 +271,12 @@ export async function POST(req: NextRequest) {
           })
         }
 
-        // Outbox / Audit Ledger: Record Checkout Event
+        // Outbox / Audit Ledger: Record Checkout Event (Staged as PENDING for Async Event Bus)
         await tx.eventLog.create({
           data: {
             eventId: primaryEventId,
-            eventType: 'OUTBOUND_CHECKOUT_DISPATCHED',
+            eventType: 'INVENTORY_DEDUCTED',
+            routingKey: 'inventory.events.deducted',
             tenantId: application.tenantId,
             warehouseId: warehouse.id,
             aggregateId: results.map((r) => r.sku).join(', '),
@@ -293,7 +294,7 @@ export async function POST(req: NextRequest) {
               })),
               timestamp: new Date().toISOString(),
             }),
-            status: 'PROCESSED',
+            status: 'PENDING',
           },
         })
 
@@ -304,6 +305,7 @@ export async function POST(req: NextRequest) {
             data: {
               eventId: breachEventId,
               eventType: 'LOW_STOCK_THRESHOLD_BREACHED',
+              routingKey: 'inventory.events.reorder',
               tenantId: application.tenantId,
               warehouseId: warehouse.id,
               aggregateId: breach.sku,
@@ -317,7 +319,7 @@ export async function POST(req: NextRequest) {
                 severity: 'CRITICAL',
                 suggestedAction: 'TRIGGER_PO_REORDER',
               }),
-              status: 'PROCESSED',
+              status: 'PENDING',
             },
           })
         }

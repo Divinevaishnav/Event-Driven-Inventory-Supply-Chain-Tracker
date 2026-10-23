@@ -70,6 +70,11 @@ export interface EventLogItem {
   aggregateId: string
   payload: string
   status: string
+  retryCount: number
+  maxRetries: number
+  lastError?: string | null
+  processedAt?: string | null
+  routingKey?: string | null
   createdAt: string
   tenant?: {
     id: string

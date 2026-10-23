@@ -47,6 +47,7 @@ import {
   Server,
 } from 'lucide-react'
 import { CheckoutSimulator } from '@/components/CheckoutSimulator'
+import { EventBusDashboard } from '@/components/EventBusDashboard'
 
 interface Props {
   initialData: DashboardPayload
@@ -224,9 +225,25 @@ export function ControlPlaneDashboard({ initialData }: Props) {
         </span>
       )
     }
-    if (eventType.includes('OUTBOUND') || eventType.includes('DISPATCHED')) {
+    if (eventType.includes('DEDUCTED')) {
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/20">
+          <ArrowUpRight className="h-3 w-3" />
+          DEDUCTED
+        </span>
+      )
+    }
+    if (eventType.includes('CORRUPT') || eventType.includes('POISON')) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-400 border border-rose-500/20">
+          <AlertTriangle className="h-3 w-3" />
+          POISON
+        </span>
+      )
+    }
+    if (eventType.includes('OUTBOUND') || eventType.includes('DISPATCHED')) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-cyan-500/10 px-2 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-500/20">
           <ArrowUpRight className="h-3 w-3" />
           OUTBOUND
         </span>
@@ -288,7 +305,7 @@ export function ControlPlaneDashboard({ initialData }: Props) {
                     EVENT-STREAM
                   </span>
                   <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 text-[10px] px-1.5 py-0 h-4">
-                    Control Plane v2.0
+                    Control Plane v3.0
                   </Badge>
                 </div>
                 <p className="text-[11px] text-zinc-400 font-mono">
@@ -322,10 +339,11 @@ export function ControlPlaneDashboard({ initialData }: Props) {
               {/* Broker */}
               <div className="flex items-center gap-1.5 rounded-full bg-zinc-900/90 px-2.5 py-1 text-xs border border-zinc-800">
                 <span className="relative flex h-2 w-2">
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                 </span>
                 <span className="text-zinc-400">Broker:</span>
-                <span className="font-medium text-emerald-400">Ready</span>
+                <span className="font-medium text-emerald-400">Active (In-Memory / Outbox Worker)</span>
               </div>
             </div>
           </div>
@@ -544,6 +562,11 @@ export function ControlPlaneDashboard({ initialData }: Props) {
           products={availableProducts}
           onSuccess={handleRefresh}
         />
+
+        {/* ================================================================ */}
+        {/* 2.6 MESSAGING BUS & DLQ CONTROL PANEL */}
+        {/* ================================================================ */}
+        <EventBusDashboard onEventProcessed={handleRefresh} />
 
         {/* ================================================================ */}
         {/* 3. WAREHOUSE STOCK MATRIX TABLE */}
